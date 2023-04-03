@@ -37,7 +37,7 @@ void SharedMemoryClient::RunClient() {
   Sleep();
 
   // thread stuff goes here
-  ProcessServerInput();
+  ProcessSharedMemory();
 
   // Unmaps the unmap shared memory object, frees up resources locally
   if (munmap(shm_map_, sizeof(*shm_map_)) == -1) {
@@ -79,7 +79,7 @@ void SharedMemoryClient::Sleep() {
   // puts itself to sleep, calls down on itself
   sem_wait(cons_sem_ptr_);
 }
-void SharedMemoryClient::ProcessServerInput() {
+void SharedMemoryClient::ProcessSharedMemory() {
   string file_message = string(shm_map_->file_path, shm_map_->path_length);
 
   if (file_message == "INVALID FILE") {
@@ -181,7 +181,7 @@ bool ContainsMixed(int argc, char* argv[]) {
   return false;
 }
 
-bool InvalidInput(int argc, char* argv[]) {
+bool InvalidOrder(int argc, char* argv[]) {
   for (int i = 3; i < argc; i += 2)
     if (!(argv[i][0] == '+' || argv[i][0] == 'x')) return true;
   return false;

@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     cerr << "Mixed boolean operations not presently supported" << endl;
     return 2;
   }
-  if (InvalidInput(argc, argv)) {
+  if (InvalidOrder(argc, argv)) {
     cerr << "Improperly formatted arguments: operations must come between "
             "arguments"
          << endl;
