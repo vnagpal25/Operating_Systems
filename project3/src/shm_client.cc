@@ -59,10 +59,10 @@ void SharedMemoryClient::RunClient() {
 void* SharedMemoryClient::ThreadExecute(void* ptr) {
   search_info* thread_info = static_cast<search_info*>(ptr);
   if (thread_info->operation_ == "+") {
-    if (OrSearch(thread_info->search_line, thread_info->search_args_))
+    if (OrSearch(thread_info->search_line_, thread_info->search_args_))
       thread_info->desired_ = true;
   } else if (thread_info->operation_ == "x") {
-    if (AndSearch(thread_info->search_line, thread_info->search_args_))
+    if (AndSearch(thread_info->search_line_, thread_info->search_args_))
       thread_info->desired_ = true;
   }
   return ptr;
@@ -97,9 +97,8 @@ void SharedMemoryClient::ProcessServerInput() {
       // create array of THREAD_NUM pthreads
       pthread_t threads[THREAD_NUM];
       // initializing struct with necessary information
-      search_info_.thread_id = i;
-      search_info_.search_line = shm_map_->file_lines[i];
-      search_info_.desired_ = false;
+      search_info_.thread_id_ = i;
+      search_info_.search_line_ = shm_map_->file_lines[i];
 
       // creates thread, ThreadExecute is where the searching algorithm is
       // implemented
@@ -109,8 +108,8 @@ void SharedMemoryClient::ProcessServerInput() {
       // pushes it back to vector if it meets the searching criteria, and if it
       // already isn't in the vector
       if (search_info_.desired_ &&
-          !Contains(result_lines_, search_info_.search_line))
-        result_lines_.push_back(search_info_.search_line);
+          !Contains(result_lines_, search_info_.search_line_))
+        result_lines_.push_back(search_info_.search_line_);
       // pthread_join(threads[i], nullptr);
     }
     // after it has pushed THREAD_NUM lines back to the vector, wake up the
