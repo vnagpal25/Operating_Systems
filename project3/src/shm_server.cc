@@ -97,7 +97,6 @@ void SharedMemoryServer::ProcessFile() {
              read_line.c_str(), strlen(read_line.c_str()));
 
       // once THREAD NUM LINES have been sent over, wake up client
-      cout << "Copied this line to shm:\n" << read_line << endl;
       if (line_num % THREAD_NUM == 0) Sleep();
 
       line_num++;

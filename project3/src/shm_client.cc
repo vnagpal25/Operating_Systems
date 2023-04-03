@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
+
 #include "project3/inc/shm_parent.h"
 using std::cout, std::cerr, std::endl, std::memcpy, std::find;
 SharedMemoryClient::SharedMemoryClient(string file_path, string operation,
@@ -59,12 +60,12 @@ void* SharedMemoryClient::ThreadExecute(void* ptr) {
   search_info* thread_info = static_cast<search_info*>(ptr);
   if (thread_info->operation_ == "+") {
     if (OrSearch(thread_info->search_line, thread_info->search_args_))
-      return &(thread_info->search_line);
-
+      thread_info->desired_ = true;
   } else if (thread_info->operation_ == "x") {
     if (AndSearch(thread_info->search_line, thread_info->search_args_))
-      return &(thread_info->search_line);
+      thread_info->desired_ = true;
   }
+  return ptr;
 }
 
 void SharedMemoryClient::ConnectSemaphores() {
@@ -96,13 +97,18 @@ void SharedMemoryClient::ProcessServerInput() {
       pthread_t threads[THREAD_NUM];
       search_info_.thread_id = i;
       search_info_.search_line = shm_map_->file_lines[i];
+      search_info_.desired_ = false;
       pthread_create(&threads[i], nullptr, ThreadExecute, &search_info_);
+      pthread_join(threads[i], nullptr);
+      if (search_info_.desired_)
+        result_lines_.push_back(search_info_.search_line);
+      // pthread_join(threads[i], nullptr);
     }
-
     // after it has pushed THREAD_NUM lines back to the vector, wake up the
     // server again
     Sleep();
   }
+  PrintVector(result_lines_);
 }
 bool AndSearch(string line, vector<string> search_args) {
   int count = 0;      // keeps track of current index
@@ -168,7 +174,9 @@ bool InvalidInput(int argc, char* argv[]) {
 }
 
 void PrintVector(vector<string> to_print) {
-  for (int i = 0; i < to_print.size(); i++) {
-    cout << to_print[i] << endl;
-  }
+  for (int i = 0; i < to_print.size(); i++) cout << to_print[i] << endl;
+}
+
+bool Contains(vector<string> strings, string line) {
+  return (find(strings.begin(), strings.end(), line) != strings.end());
 }
