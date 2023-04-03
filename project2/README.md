@@ -2,6 +2,8 @@
 # CSCE 311 Project 2 - IPC
 Written by Vansh Nagpal
 
+The purpose of this project is to learn the use of Unix Domain Sockets as an introduction to IPC.
+
 makefile: compiles c/c++ source/header files using c++ standard and warning flags
 
   - make text-server: command in terminal compiles/links and creates an executable for a server
