@@ -12,6 +12,7 @@ makefile: compiles c/c++ source/header files using c++ standard and warning flag
 
 Parent Files:
   - inc/shm_parent.h
+    - abstract class
 
 Server Socket Files:
 
