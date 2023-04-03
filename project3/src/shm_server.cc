@@ -18,7 +18,7 @@ SharedMemoryServer::SharedMemoryServer() {
 
 void SharedMemoryServer::RunServer() {
   clog << "SERVER STARTED" << endl;
-
+  cout << "\033[1;31mbold red text\033[0m\n" << endl;
   // calls down on its own semaphore, puts itself to sleep, client will wake it
   // up
   sem_wait(prod_sem_ptr_);
