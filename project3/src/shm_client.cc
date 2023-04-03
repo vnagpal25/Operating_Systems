@@ -94,12 +94,20 @@ void SharedMemoryClient::ProcessServerInput() {
       // memcpy(read_lines_[i], shm_map_->file_lines[i],
       //        strlen(shm_map_->file_lines[i]));
 
+      // create array of THREAD_NUM pthreads
       pthread_t threads[THREAD_NUM];
+      // initializing struct with necessary information
       search_info_.thread_id = i;
       search_info_.search_line = shm_map_->file_lines[i];
       search_info_.desired_ = false;
+
+      // creates thread, ThreadExecute is where the searching algorithm is
+      // implemented
       pthread_create(&threads[i], nullptr, ThreadExecute, &search_info_);
+      // joins thread
       pthread_join(threads[i], nullptr);
+      // pushes it back to vector if it meets the searching criteria, and if it
+      // already isn't in the vector
       if (search_info_.desired_ &&
           !Contains(result_lines_, search_info_.search_line))
         result_lines_.push_back(search_info_.search_line);
@@ -109,6 +117,7 @@ void SharedMemoryClient::ProcessServerInput() {
     // server again
     Sleep();
   }
+  // prints out result_lines_
   PrintResults();
 }
 
