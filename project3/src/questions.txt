@@ -1,0 +1,46 @@
+1. include statements for inc directory headers
+  notes: check
+
+2. how to set up IPC for file path(semaphore or domain socket)
+  notes:
+
+3. how to set up threads in consumer(do I need a semaphore here)
+  notes:
+
+5. does the whole csv file go in a singular char array(delimited ofc)
+  (would buf size be large as the file then?)
+  notes: treat shm as big char array, server copies 4 lines from file to shm, tells client 
+        
+
+6. how many semaphores?
+  notes: only 2
+
+7. what requires classes/wrappers/etc.?
+  notes:
+
+8. oflags/permission bits for shm in client and server
+  notes:
+
+4. ask about compilation flags for shm and threads
+  notes: -lrt at the end of the statement after all of the object files linker library flag, -pthread is a linker flag
+
+  server makes semaphore for producer(0) and consumer(0) and also destroys them
+
+  producer_sem.down()//always calls down on its own semaphore, up on client's semaphore(wake up client)
+
+
+  client calls up on producer's semaphore(letting producer know file path is there),
+  calls calls down on consumer's semaphore()//always calls down on its own, calls up on producer's semaphore
+
+  server gets path out of shared memory, now what?
+    - opens file
+    - loads 4 lines of the file into the shared memory
+    - calls down on its own sem, calls up on clients
+  
+  client is woken up:
+    - create 4 new threads (pthread_create)
+    - threads implement searching algorithm
+      -  the function that will be executed, use void* return and void* as a parameter
+  join 4 threads at the end (pthread_join)
+
+  line 12 and line 33 named_semaphore.cc for creating and opening semaphores
