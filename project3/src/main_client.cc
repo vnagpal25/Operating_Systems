@@ -28,11 +28,9 @@ int main(int argc, char* argv[]) {
          << endl;
     return 3;
   }
-
   string file_path, op;
   vector<string> search_args;
   ParseArgs(&file_path, &op, &search_args, argv, argc);
-  PrintVector(search_args);
   SharedMemoryClient shm_client(file_path, op, search_args);
   shm_client.RunClient();
   return 0;

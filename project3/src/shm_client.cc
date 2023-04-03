@@ -100,7 +100,8 @@ void SharedMemoryClient::ProcessServerInput() {
       search_info_.desired_ = false;
       pthread_create(&threads[i], nullptr, ThreadExecute, &search_info_);
       pthread_join(threads[i], nullptr);
-      if (search_info_.desired_)
+      if (search_info_.desired_ &&
+          !Contains(result_lines_, search_info_.search_line))
         result_lines_.push_back(search_info_.search_line);
       // pthread_join(threads[i], nullptr);
     }
@@ -108,7 +109,12 @@ void SharedMemoryClient::ProcessServerInput() {
     // server again
     Sleep();
   }
-  PrintVector(result_lines_);
+  PrintResults();
+}
+
+void SharedMemoryClient::PrintResults() {
+  for (int i = 0; i < static_cast<int>(result_lines_.size()); i++)
+    cout << (i + 1) << "\t" << result_lines_[i] << endl;
 }
 bool AndSearch(string line, vector<string> search_args) {
   int count = 0;      // keeps track of current index
@@ -174,7 +180,8 @@ bool InvalidInput(int argc, char* argv[]) {
 }
 
 void PrintVector(vector<string> to_print) {
-  for (int i = 0; i < to_print.size(); i++) cout << to_print[i] << endl;
+  for (int i = 0; i < static_cast<int>(to_print.size()); i++)
+    cout << to_print[i] << endl;
 }
 
 bool Contains(vector<string> strings, string line) {

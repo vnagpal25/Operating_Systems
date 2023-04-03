@@ -28,13 +28,13 @@ class SharedMemoryClient : public SharedMemoryParent {
   } search_info_;
 
   shm_buf_* shm_map_;
-  vector<string> server_lines_;
+  // vector<string> server_lines_;
   vector<string> result_lines_;
   char read_lines_[THREAD_NUM][BUF_SIZE];
   void ConnectSemaphores();
   void ProcessServerInput();
   void Sleep();
-
+  void PrintResults();
   static void* ThreadExecute(void* ptr);
 };
 
