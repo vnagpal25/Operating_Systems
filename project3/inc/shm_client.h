@@ -1,10 +1,10 @@
 /*Copyright 2023 CSCE311 Project 3
  * author - vnagpal
- * Contains definition of shared memory client class
+ * Contains definition of shared memory client class, as well as non class
+ * helper functions
  */
 #ifndef PROJECT3_INC_SHM_CLIENT_H_
-#define PROJECT3_INC_SMH_CLIENT_H_
-
+#define PROJECT3_INC_SHM_CLIENT_H_
 #include <cstring>   // cstring functionality
 #include <iostream>  // I/O c++
 #include <string>    // string functionality
@@ -55,12 +55,6 @@ class SharedMemoryClient : public SharedMemoryParent {
   // from parent, struct pointer for mapping shared memory on client side
   shm_buf_* shm_map_;
 
-  // vector of the lines that satisfy the search criteria
-  // vector<string> result_lines_;
-
-  // 2d array holds THREAD_NUM lines from shared memory as its rows
-  char read_lines_[THREAD_NUM][BUF_SIZE];
-
   /**
    * Function processes information loaded into shared memory
    */
@@ -80,7 +74,7 @@ class SharedMemoryClient : public SharedMemoryParent {
   void ConnectSemaphores();
 
   /**
-   * Puts Client to sleep, and wakes up client.
+   * Puts Client to sleep, and wakes up server.
    * Used after client is done processing shared memory so that the server can
    * load in more shared memory
    */
@@ -162,5 +156,11 @@ bool Contains(string str, string substring);
  */
 void PrintVector(vector<string> to_print);
 
-string HighlightTerms(string search_line_, vector<string> search_args);
+/**
+ * Method highlights the arguments being searched for in the terminal when
+ * printed out. Does so by surrounding with ansi escape codes
+ * @param search_line a particular line being searched for the arguments
+ * @param search_args vector of arguments being used as search criteria
+ */
+void HighlightTerms(string* search_line, vector<string> search_args);
 #endif  // PROJECT3_INC_SHM_CLIENT_H_
