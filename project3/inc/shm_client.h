@@ -49,7 +49,7 @@ class SharedMemoryClient : public SharedMemoryParent {
     bool desired_ = false;
 
     // vector of the lines that satisfy the search criteria
-    vector<string> result_lines_;
+    vector<string> results_;
   } search_info_;  // instance of search_info struct
 
   // from parent, struct pointer for mapping shared memory on client side
