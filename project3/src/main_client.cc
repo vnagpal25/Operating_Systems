@@ -31,7 +31,11 @@ int main(int argc, char* argv[]) {
   string file_path, op;
   vector<string> search_args;
   ParseArgs(&file_path, &op, &search_args, argv, argc);
+
+  // Steps 1 - 6 in constructor and run method
   SharedMemoryClient shm_client(file_path, op, search_args);
   shm_client.RunClient();
+
+  // 7. TERMINATES BY RETURNING 0 TO INDICATE NOMINATIVE EXIT STATUS
   return 0;
 }

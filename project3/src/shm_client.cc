@@ -8,11 +8,15 @@ using std::cout, std::cerr, std::endl, std::memcpy, std::find;
 pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 SharedMemoryClient::SharedMemoryClient(string file_path, string operation,
                                        vector<string> search_args) {
+  // initializes class members
   file_path_ = file_path;
   search_info_.operation_ = operation;
   search_info_.search_args_ = search_args;
 
+  // 0. destroys shared memory location in case not destroyed from last run
   shm_unlink(SHM_NAME);
+
+  // 1a. CREATES A SHARED MEMORY LOCATION
   shm_fd_ = shm_open(SHM_NAME, O_CREAT | O_EXCL | O_RDWR, 0660);
   if (shm_fd_ < 0) {
     cerr << "FAILED TO CREATE SHARED MEMORY" << endl;
@@ -22,21 +26,22 @@ SharedMemoryClient::SharedMemoryClient(string file_path, string operation,
   ConnectSemaphores();
 }
 void SharedMemoryClient::RunClient() {
-  // sets the size of the shared memory segment
+  // 1b. INITIALIZES SHARED MEMORY WITH NECESSARY STRUCTURE
+  //  sets the size of the shared memory segment
   ftruncate(shm_fd_, BUF_SIZE);
-
   // maps the shared memory to local memory, allowing client process to access
   // it as if it was its own
   shm_map_ = static_cast<shm_buf_*>(
       mmap(nullptr, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_, 0));
 
-  // Write to the shared memory object
+  // 2. SENDS TEXT FILE NAME AND PATH TO SERVER
   memcpy(shm_map_->file_path, file_path_.c_str(), strlen(file_path_.c_str()));
   shm_map_->path_length = strlen(file_path_.c_str());
 
+  // client calls down on itself and up on server
   Sleep();
 
-  // thread stuff goes here
+  // client wakes up and starts to process the lines loaded into shared memory
   ProcessSharedMemory();
 
   // Unmaps the unmap shared memory object, frees up resources locally
@@ -45,11 +50,12 @@ void SharedMemoryClient::RunClient() {
     exit(errno);
   }
 
-  // Close the file descriptor for the shared memory object, destroys it
+  // 6. DESTROYS SHARED MEMORY LOCATION
+  //  Close the file descriptor for the shared memory object, destroys it
   close(shm_fd_);
 
-  // Remove the shared memory object from the system, no process will be able to
-  // access it now
+  // Remove the shared memory object from the system, rendering it inaccessible
+  // to all processes
   if (shm_unlink(SHM_NAME) == -1) {
     cerr << "FAILED TO UNLINK SHM" << endl;
     exit(errno);
@@ -86,12 +92,16 @@ void SharedMemoryClient::Sleep() {
   sem_wait(cons_sem_ptr_);
 }
 void SharedMemoryClient::ProcessSharedMemory() {
+  // following block checks if the client had sent the server an invalid file
+  // name, this message is stored in the file_path string in the shm struct
   string file_message = string(shm_map_->file_path, shm_map_->path_length);
-
   if (file_message == "INVALID FILE") {
     cerr << file_message << endl;
     return;
   }
+
+  // server sends over message when it has closed the file, until then client
+  // keeps reading. message will also be stored in file_path string
   while (string(shm_map_->file_path, shm_map_->path_length) != "FILE CLOSED") {
     for (int i = 0; i < THREAD_NUM; i++) {
       // create array of THREAD_NUM pthreads
@@ -100,27 +110,18 @@ void SharedMemoryClient::ProcessSharedMemory() {
       search_info_.search_line_ =
           string(shm_map_->file_lines[i], shm_map_->lines_length[i]);
 
-      // creates thread, ThreadExecute is where the searching algorithm is
-      // implemented
+      // 4. CREATES 4(THREAD_NUM) THREADS THAT WILL BE USED TO SEARCH 1/4 of
+      // SHARED MEMORY LINES USING SEARCHING ALGORITHM
       pthread_create(&searcher_threads_[i], nullptr, ThreadExecute,
                      &search_info_);
-
       // joins threads
       pthread_join(searcher_threads_[i], nullptr);
-
-      // pushes it back to vector if it meets the searching criteria, and if
-      // it already isn't in the vector
-
-      // if (search_info_.desired_ &&
-      //     !Contains(search_info_.result_lines_,
-      //     search_info_.search_line_))
-      //   search_info_.result_lines_.push_back(search_info_.search_line_);
     }
     // after it has pushed THREAD_NUM lines back to the vector, wake up the
     // server again
     Sleep();
   }
-  // prints out result_lines_
+  // 5. PRINTS OUT THE RESULTING LINES FROM THREADS TO STDOUT
   PrintResults(search_info_.result_lines_);
 }
 
