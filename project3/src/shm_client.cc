@@ -1,11 +1,21 @@
-#include "project3/inc/shm_client.h"
+/*Copyright 2023 CSCE311 Project 3
+ * author - vnagpal
+ * Contains implementation of shared memory client class, as well as non class
+ * helper functions
+ */
+#include "project3/inc/shm_client.h"  // class definitions
 
-#include <algorithm>
-#include <iostream>
+#include <algorithm>  // string searching algorithms
+#include <iostream>   // I/O
 
-#include "project3/inc/shm_parent.h"
+#include "project3/inc/shm_parent.h"  // parent functionality
+
+// for readability
 using std::cout, std::cerr, std::endl, std::memcpy, std::find;
-pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+
+// static mutex to be used for synchronizing threads
+pthread_mutex_t thread_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 SharedMemoryClient::SharedMemoryClient(string file_path, string operation,
                                        vector<string> search_args) {
   // initializes class members
@@ -65,25 +75,21 @@ void SharedMemoryClient::RunClient() {
 
 void* SharedMemoryClient::ThreadExecute(void* ptr) {
   search_info* thread_info = static_cast<search_info*>(ptr);
-  pthread_mutex_lock(&m);
+  pthread_mutex_lock(&thread_mutex);
   if (thread_info->operation_ == "+" &&
       OrSearch(thread_info->search_line_, thread_info->search_args_)) {
+    HighlightTerms(&thread_info->search_line_, thread_info->search_args_);
     if (!Contains(thread_info->result_lines_, thread_info->search_line_)) {
-      string result_line =
-          HighlightTerms(thread_info->search_line_, thread_info->search_args_);
-      thread_info->result_lines_.push_back(result_line);
-      // thread_info->result_lines_.push_back(thread_info->search_line_);
+      thread_info->result_lines_.push_back(thread_info->search_line_);
     }
   } else if (thread_info->operation_ == "x" &&
              AndSearch(thread_info->search_line_, thread_info->search_args_)) {
+    HighlightTerms(&thread_info->search_line_, thread_info->search_args_);
     if (!Contains(thread_info->result_lines_, thread_info->search_line_)) {
-      // thread_info->result_lines_.push_back(thread_info->search_line_);
-      string result_line =
-          HighlightTerms(thread_info->search_line_, thread_info->search_args_);
-      thread_info->result_lines_.push_back(result_line);
+      thread_info->result_lines_.push_back(thread_info->search_line_);
     }
   }
-  pthread_mutex_unlock(&m);
+  pthread_mutex_unlock(&thread_mutex);
   return ptr;
 }
 
@@ -214,16 +220,19 @@ bool Contains(string str, string substring, int* index) {
   *index = str.string::find(substring);
   return *index != string::npos;
 }
-string HighlightTerms(string search_line, vector<string> args) {
+void HighlightTerms(string* search_line, vector<string> args) {
   string magenta_prefix = "\033[1;35m";
   string magenta_suffix = "\033[0m";
   for (int i = 0; i < static_cast<int>(args.size()); i++) {
     int index = -1;
-    if (Contains(search_line, args[i], &index)) {
-      search_line.insert(index, magenta_prefix);
-      search_line.insert(index + magenta_prefix.size() + args[i].size(),
-                         magenta_suffix);
+    if (Contains(*search_line, args[i], &index)) {
+      // inserting prefix directly before substring
+      search_line->insert(index, magenta_prefix);
+
+      // inserting suffix directly after substring, offset due to prefix
+      // inserted
+      search_line->insert(index + magenta_prefix.size() + args[i].size(),
+                          magenta_suffix);
     }
   }
-  return search_line;
 }
