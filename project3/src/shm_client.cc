@@ -43,6 +43,7 @@ void SharedMemoryClient::RunClient() {
 
   // client wakes up and starts to process the lines loaded into shared memory
   ProcessSharedMemory();
+  sem_post(prod_sem_ptr_);
 
   // Unmaps the unmap shared memory object, frees up resources locally
   if (munmap(shm_map_, sizeof(*shm_map_)) == -1) {
@@ -68,12 +69,18 @@ void* SharedMemoryClient::ThreadExecute(void* ptr) {
   if (thread_info->operation_ == "+" &&
       OrSearch(thread_info->search_line_, thread_info->search_args_)) {
     if (!Contains(thread_info->result_lines_, thread_info->search_line_)) {
-      thread_info->result_lines_.push_back(thread_info->search_line_);
+      string result_line =
+          HighlightTerms(thread_info->search_line_, thread_info->search_args_);
+      thread_info->result_lines_.push_back(result_line);
+      // thread_info->result_lines_.push_back(thread_info->search_line_);
     }
   } else if (thread_info->operation_ == "x" &&
              AndSearch(thread_info->search_line_, thread_info->search_args_)) {
     if (!Contains(thread_info->result_lines_, thread_info->search_line_)) {
-      thread_info->result_lines_.push_back(thread_info->search_line_);
+      // thread_info->result_lines_.push_back(thread_info->search_line_);
+      string result_line =
+          HighlightTerms(thread_info->search_line_, thread_info->search_args_);
+      thread_info->result_lines_.push_back(result_line);
     }
   }
   pthread_mutex_unlock(&m);
@@ -107,6 +114,7 @@ void SharedMemoryClient::ProcessSharedMemory() {
       // create array of THREAD_NUM pthreads
       // initializing struct with necessary information
 
+      // 3. COPIES FROM SHARED MEMORY BACK TO LOCAL
       search_info_.search_line_ =
           string(shm_map_->file_lines[i], shm_map_->lines_length[i]);
 
@@ -200,4 +208,22 @@ void PrintVector(vector<string> to_print) {
 
 bool Contains(vector<string> strings, string line) {
   return (find(strings.begin(), strings.end(), line) != strings.end());
+}
+
+bool Contains(string str, string substring, int* index) {
+  *index = str.string::find(substring);
+  return *index != string::npos;
+}
+string HighlightTerms(string search_line, vector<string> args) {
+  string magenta_prefix = "\033[1;35m";
+  string magenta_suffix = "\033[0m";
+  for (int i = 0; i < static_cast<int>(args.size()); i++) {
+    int index = -1;
+    if (Contains(search_line, args[i], &index)) {
+      search_line.insert(index, magenta_prefix);
+      search_line.insert(index + magenta_prefix.size() + args[i].size(),
+                         magenta_suffix);
+    }
+  }
+  return search_line;
 }

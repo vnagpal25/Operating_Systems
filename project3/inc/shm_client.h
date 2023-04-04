@@ -155,8 +155,12 @@ bool OrSearch(string line, vector<string> search_args);
  */
 bool Contains(vector<string> strings, string line);
 
+bool Contains(string str, string substring);
+
 /**
  * Method prints the contents of a vector to the console, used for debugging
  */
 void PrintVector(vector<string> to_print);
+
+string HighlightTerms(string search_line_, vector<string> search_args);
 #endif  // PROJECT3_INC_SHM_CLIENT_H_
