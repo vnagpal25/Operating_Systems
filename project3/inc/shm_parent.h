@@ -23,9 +23,17 @@ class SharedMemoryParent {
   // struct which will be used to map in shared memory on both server and client
   // side
   struct shm_buf_ {
+    // used to store file_path, as well as status messages from server(INVALID
+    // FILE, FILE CLOSED)
     char file_path[MAX_PATH_SIZE];
+
+    // length of the path
     size_t path_length;
+
+    // lines of file that will be written to shm
     char file_lines[THREAD_NUM][BUF_SIZE];
+
+    // stores the length of each line
     size_t lines_length[THREAD_NUM];
   };
   int shm_fd_;           // file descriptor for shared memory segment
