@@ -59,14 +59,16 @@ void SharedMemoryClient::RunClient() {
 void* SharedMemoryClient::ThreadExecute(void* ptr) {
   search_info* thread_info = static_cast<search_info*>(ptr);
   pthread_mutex_lock(&m);
-  if (thread_info->operation_ == "+") {
-    if (OrSearch(thread_info->search_line_, thread_info->search_args_) &&
-        !Contains(thread_info->result_lines_, thread_info->search_line_))
+  if (thread_info->operation_ == "+" &&
+      OrSearch(thread_info->search_line_, thread_info->search_args_)) {
+    if (!Contains(thread_info->result_lines_, thread_info->search_line_)) {
       thread_info->result_lines_.push_back(thread_info->search_line_);
-  } else if (thread_info->operation_ == "x") {
-    if (AndSearch(thread_info->search_line_, thread_info->search_args_) &&
-        !Contains(thread_info->result_lines_, thread_info->search_line_))
+    }
+  } else if (thread_info->operation_ == "x" &&
+             AndSearch(thread_info->search_line_, thread_info->search_args_)) {
+    if (!Contains(thread_info->result_lines_, thread_info->search_line_)) {
       thread_info->result_lines_.push_back(thread_info->search_line_);
+    }
   }
   pthread_mutex_unlock(&m);
   return ptr;
@@ -106,11 +108,12 @@ void SharedMemoryClient::ProcessSharedMemory() {
       // joins threads
       pthread_join(searcher_threads_[i], nullptr);
 
-      // pushes it back to vector if it meets the searching criteria, and if it
-      // already isn't in the vector
+      // pushes it back to vector if it meets the searching criteria, and if
+      // it already isn't in the vector
 
       // if (search_info_.desired_ &&
-      //     !Contains(search_info_.result_lines_, search_info_.search_line_))
+      //     !Contains(search_info_.result_lines_,
+      //     search_info_.search_line_))
       //   search_info_.result_lines_.push_back(search_info_.search_line_);
     }
     // after it has pushed THREAD_NUM lines back to the vector, wake up the
@@ -133,8 +136,8 @@ bool AndSearch(string line, vector<string> search_args) {
   // through args; if the line doesn't contain one of the args, then it exits
   // the loop as it is unnecessary to check anymore
   while (found && count < static_cast<int>(search_args.size())) {
-    // npos is -1; if element isn't found, .find() returns -1, otherwise returns
-    // index of where string is found
+    // npos is -1; if element isn't found, .find() returns -1, otherwise
+    // returns index of where string is found
     if (line.find(search_args[count]) == string::npos) found = false;
     count++;
   }
@@ -148,8 +151,8 @@ bool OrSearch(string line, vector<string> search_args) {
   // through args; if the element is found it exits the loop since it is
   // unnecessary to check anymore
   while (!found && count < static_cast<int>(search_args.size())) {
-    // npos is -1; if element isn't found, .find() returns -1, otherwise returns
-    // index of where string is found
+    // npos is -1; if element isn't found, .find() returns -1, otherwise
+    // returns index of where string is found
     if (line.find(search_args[count]) != string::npos) found = true;
     count++;
   }
