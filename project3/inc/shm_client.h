@@ -29,6 +29,8 @@ class SharedMemoryClient : public SharedMemoryParent {
   void RunClient();
 
  private:
+  pthread_t searcher_threads_[THREAD_NUM];
+
   string file_path_;  // file to be searched
 
   // struct that contains all information/criteria a pthread will need to search
@@ -39,22 +41,22 @@ class SharedMemoryClient : public SharedMemoryParent {
     // vector of arguments that will be used to search the file
     vector<string> search_args_;
 
-    // id of the thread that is searching local memory
-    int thread_id_;
-
     // line that is being checked
     string search_line_;
 
     // bool specifies is line being searched meets search criteria, false by
     // default
     bool desired_ = false;
+
+    // vector of the lines that satisfy the search criteria
+    vector<string> result_lines_;
   } search_info_;  // instance of search_info struct
 
   // from parent, struct pointer for mapping shared memory on client side
   shm_buf_* shm_map_;
 
   // vector of the lines that satisfy the search criteria
-  vector<string> result_lines_;
+  // vector<string> result_lines_;
 
   // 2d array holds THREAD_NUM lines from shared memory as its rows
   char read_lines_[THREAD_NUM][BUF_SIZE];
@@ -87,7 +89,7 @@ class SharedMemoryClient : public SharedMemoryParent {
   /**
    * Function prints out the contents of result_lines_ to the console
    */
-  void PrintResults();
+  void PrintResults(vector<string> results);
 };
 
 // NON CLASS FUNCTIONS

@@ -11,6 +11,7 @@
 #define BUF_SIZE 1024                  // max length of shared memory segment
 #define MAX_PATH_SIZE 32  // safely assuming max size of file path as 32 bytes
 #define THREAD_NUM 4      // number of threads on client side
+#define SHM_SIZE 4096     // number of bytes that shared memory will be using, safe estimate
 #include <fcntl.h>        // O-flags for semaphores and shared memory
 #include <pthread.h>      // all thread functionality
 #include <semaphore.h>    // all named semaphore functionality
@@ -25,6 +26,7 @@ class SharedMemoryParent {
     char file_path[MAX_PATH_SIZE];
     size_t path_length;
     char file_lines[THREAD_NUM][BUF_SIZE];
+    size_t lines_length[THREAD_NUM];
   };
   int shm_fd_;           // file descriptor for shared memory segment
   sem_t* prod_sem_ptr_;  // pointer to producer semaphore

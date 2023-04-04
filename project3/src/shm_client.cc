@@ -5,6 +5,7 @@
 
 #include "project3/inc/shm_parent.h"
 using std::cout, std::cerr, std::endl, std::memcpy, std::find;
+pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 SharedMemoryClient::SharedMemoryClient(string file_path, string operation,
                                        vector<string> search_args) {
   file_path_ = file_path;
@@ -26,9 +27,8 @@ void SharedMemoryClient::RunClient() {
 
   // maps the shared memory to local memory, allowing client process to access
   // it as if it was its own
-  shm_map_ = static_cast<shm_buf_*>(mmap(nullptr, sizeof(*shm_map_),
-                                         PROT_READ | PROT_WRITE, MAP_SHARED,
-                                         shm_fd_, 0));
+  shm_map_ = static_cast<shm_buf_*>(
+      mmap(nullptr, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_, 0));
 
   // Write to the shared memory object
   memcpy(shm_map_->file_path, file_path_.c_str(), strlen(file_path_.c_str()));
@@ -58,13 +58,17 @@ void SharedMemoryClient::RunClient() {
 
 void* SharedMemoryClient::ThreadExecute(void* ptr) {
   search_info* thread_info = static_cast<search_info*>(ptr);
+  pthread_mutex_lock(&m);
   if (thread_info->operation_ == "+") {
-    if (OrSearch(thread_info->search_line_, thread_info->search_args_))
-      thread_info->desired_ = true;
+    if (OrSearch(thread_info->search_line_, thread_info->search_args_) &&
+        !Contains(thread_info->result_lines_, thread_info->search_line_))
+      thread_info->result_lines_.push_back(thread_info->search_line_);
   } else if (thread_info->operation_ == "x") {
-    if (AndSearch(thread_info->search_line_, thread_info->search_args_))
-      thread_info->desired_ = true;
+    if (AndSearch(thread_info->search_line_, thread_info->search_args_) &&
+        !Contains(thread_info->result_lines_, thread_info->search_line_))
+      thread_info->result_lines_.push_back(thread_info->search_line_);
   }
+  pthread_mutex_unlock(&m);
   return ptr;
 }
 
@@ -88,42 +92,40 @@ void SharedMemoryClient::ProcessSharedMemory() {
   }
   while (string(shm_map_->file_path, shm_map_->path_length) != "FILE CLOSED") {
     for (int i = 0; i < THREAD_NUM; i++) {
-      // if (!(find(server_lines_.begin(), server_lines_.end(),
-      //            (shm_map_->file_lines[i])) != server_lines_.end()))
-      //   server_lines_.push_back((shm_map_->file_lines[i]));
-      // memcpy(read_lines_[i], shm_map_->file_lines[i],
-      //        strlen(shm_map_->file_lines[i]));
-
       // create array of THREAD_NUM pthreads
-      pthread_t threads[THREAD_NUM];
       // initializing struct with necessary information
-      search_info_.thread_id_ = i;
-      search_info_.search_line_ = shm_map_->file_lines[i];
+
+      search_info_.search_line_ =
+          string(shm_map_->file_lines[i], shm_map_->lines_length[i]);
 
       // creates thread, ThreadExecute is where the searching algorithm is
       // implemented
-      pthread_create(&threads[i], nullptr, ThreadExecute, &search_info_);
-      // joins thread
-      pthread_join(threads[i], nullptr);
+      pthread_create(&searcher_threads_[i], nullptr, ThreadExecute,
+                     &search_info_);
+
+      // joins threads
+      pthread_join(searcher_threads_[i], nullptr);
+
       // pushes it back to vector if it meets the searching criteria, and if it
       // already isn't in the vector
-      if (search_info_.desired_ &&
-          !Contains(result_lines_, search_info_.search_line_))
-        result_lines_.push_back(search_info_.search_line_);
-      // pthread_join(threads[i], nullptr);
+
+      // if (search_info_.desired_ &&
+      //     !Contains(search_info_.result_lines_, search_info_.search_line_))
+      //   search_info_.result_lines_.push_back(search_info_.search_line_);
     }
     // after it has pushed THREAD_NUM lines back to the vector, wake up the
     // server again
     Sleep();
   }
   // prints out result_lines_
-  PrintResults();
+  PrintResults(search_info_.result_lines_);
 }
 
-void SharedMemoryClient::PrintResults() {
-  for (int i = 0; i < static_cast<int>(result_lines_.size()); i++)
-    cout << (i + 1) << "\t" << result_lines_[i] << endl;
+void SharedMemoryClient::PrintResults(vector<string> results) {
+  for (int i = 0; i < static_cast<int>(results.size()); i++)
+    cout << (i + 1) << "\t" << results[i] << endl;
 }
+
 bool AndSearch(string line, vector<string> search_args) {
   int count = 0;      // keeps track of current index
   bool found = true;  // bool for if all elements are found

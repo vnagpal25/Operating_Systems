@@ -32,12 +32,11 @@ void SharedMemoryServer::RunServer() {
     exit(errno);
   }
   clog << "\tMEMORY OPEN" << endl;
-  shm_map_ = static_cast<shm_buf_*>(mmap(nullptr, sizeof(*shm_map_),
+  shm_map_ = static_cast<shm_buf_*>(mmap(nullptr, SHM_SIZE,
                                          PROT_READ | PROT_WRITE, MAP_SHARED,
                                          shm_fd_, 0));
   file_path_ = string(shm_map_->file_path, shm_map_->path_length);
   ProcessFile();
-  clog << "processed file" << endl;
   Sleep();
 
   if (munmap(shm_map_, sizeof(*shm_map_)) == -1) {
@@ -95,6 +94,14 @@ void SharedMemoryServer::ProcessFile() {
       // its semaphore and call up on the client's semaphore
       memcpy(shm_map_->file_lines[(line_num - 1) % THREAD_NUM],
              read_line.c_str(), strlen(read_line.c_str()));
+
+
+      // setting the length of each line read
+      cout << ((line_num - 1) % THREAD_NUM) << endl;
+      cout << strlen(read_line.c_str()) << endl;
+      int index = ((line_num - 1) % THREAD_NUM);
+      shm_map_->lines_length[(line_num - 1) % THREAD_NUM] = strlen(read_line.c_str());
+
 
       // once THREAD NUM LINES have been sent over, wake up client
       if (line_num % THREAD_NUM == 0) Sleep();
