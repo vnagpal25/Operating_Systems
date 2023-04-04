@@ -43,11 +43,7 @@ class SharedMemoryClient : public SharedMemoryParent {
 
     // line that is being checked
     string search_line_;
-
-    // bool specifies is line being searched meets search criteria, false by
-    // default
-    bool desired_ = false;
-
+    
     // vector of the lines that satisfy the search criteria
     vector<string> results_;
   } search_info_;  // instance of search_info struct
