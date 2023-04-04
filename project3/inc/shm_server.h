@@ -14,17 +14,17 @@
 
 // for readability
 using std::string;
+
+// Server Class is a child of the Parent
 class SharedMemoryServer : public SharedMemoryParent {
  public:
-  /**
-   * Constructor for server, calls helper methods for semaphores
-   */
+  // Constructor for server, calls helper methods for semaphores
   SharedMemoryServer();
 
   /**
    * Main run method, main flow of logic, calls helper methods
    * @param print_welcome prevents "SERVER STARTED" from being printed each time
-   * a client connects
+   * a client connects, since method is called recursively
    */
   void RunServer(bool print_welcome);
 
@@ -35,14 +35,10 @@ class SharedMemoryServer : public SharedMemoryParent {
   // from parent, struct pointer for mapping shared memory on server side
   shm_buf_* shm_map_;
 
-  /**
-   * Method creates semaphores for consumer and producer
-   */
+  // Method creates semaphores for consumer and producer
   void CreateSemaphores();
 
-  /**
-   * Method destroys semaphores for consumer and producer
-   */
+  // Method destroys semaphores for consumer and producer
   void DestroySemaphores();
 
   /**

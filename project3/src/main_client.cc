@@ -7,8 +7,9 @@
 #include <string>    // string functionality
 #include <vector>    // vector functionality
 
-#include "project3/inc/shm_client.h"
-#include "project3/inc/shm_parent.h"
+#include "project3/inc/shm_client.h"  // client functionality
+#include "project3/inc/shm_parent.h"  // shm_parent functionality
+
 using std::cout, std::cerr, std::endl, std::string, std::vector;
 
 int main(int argc, char* argv[]) {
