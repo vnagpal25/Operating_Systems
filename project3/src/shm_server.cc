@@ -97,9 +97,6 @@ void SharedMemoryServer::ProcessFile() {
 
 
       // setting the length of each line read
-      cout << ((line_num - 1) % THREAD_NUM) << endl;
-      cout << strlen(read_line.c_str()) << endl;
-      int index = ((line_num - 1) % THREAD_NUM);
       shm_map_->lines_length[(line_num - 1) % THREAD_NUM] = strlen(read_line.c_str());
 
 
