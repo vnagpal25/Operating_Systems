@@ -64,6 +64,7 @@ void SharedMemoryServer::ProcessFile() {
     const char* error_message = "INVALID FILE";
     memcpy(shm_map_->file_path, error_message, strlen(error_message));
     shm_map_->path_length = strlen(error_message);
+    Sleep();
     return;
   } else {
     string read_line;  // individual line that will be read
