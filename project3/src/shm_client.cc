@@ -214,7 +214,12 @@ void ParseArgs(string* file_path, string* operation,
   // argv[2k+1] for integer k. At this point, the code has already checked if
   // all the operations are the same. Thus we will just extract the first
   // instance of the operation(argv[3])
-  *operation = argv[3];
+  // if there is only one argument, no operation was specified, so by default
+  // its OR
+  if (argc == 3)
+    *operation = "+";
+  else
+    *operation = argv[3];
 
   // third step is to extract all of the arguments, which occur at indices 2k
   // for k >= 1
