@@ -8,7 +8,7 @@
 #define SHM_NAME "CSV_SHM"             // name of shared mem segment
 #define PROD_SEM "PRODUCER_SEMAPHORE"  // name of server semaphore
 #define CONS_SEM "CONSUMER_SEMAPHORE"  // name of client semaphore
-#define BUF_SIZE 1024                  // max length of shared memory segment
+#define BUF_SIZE 1024                  // max length of a transferred line
 #define MAX_PATH_SIZE 32  // safely assuming max size of file path as 32 bytes
 #define THREAD_NUM 4      // number of threads on client side
 #define SHM_SIZE 4096   // number of bytes that shm will be using, safe estimate
