@@ -6,6 +6,6 @@
 using std::cout, std::clog, std::endl;
 int main(int argc, char* argv[]) {
   SharedMemoryServer shm_server;
-  shm_server.RunServer();
+  shm_server.RunServer(true);
   return 0;
 }

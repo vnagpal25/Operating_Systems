@@ -16,9 +16,9 @@ SharedMemoryServer::SharedMemoryServer() {
   CreateSemaphores();
 }
 
-void SharedMemoryServer::RunServer() {
+void SharedMemoryServer::RunServer(bool print_welcome) {
   // 1. SERVER STARTED
-  clog << "SERVER STARTED" << endl;
+  if (print_welcome) clog << "SERVER STARTED" << endl;
   // calls down on its own semaphore, puts itself to sleep, client will wake it
   // up
   sem_wait(prod_sem_ptr_);
@@ -49,7 +49,7 @@ void SharedMemoryServer::RunServer() {
   }
   close(shm_fd_);
   clog << "\tMEMORY CLOSED" << endl;
-  RunServer();
+  RunServer(false);
 }
 
 void SharedMemoryServer::ProcessFile() {
