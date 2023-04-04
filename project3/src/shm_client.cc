@@ -46,7 +46,7 @@ void SharedMemoryClient::RunClient() {
   sem_post(prod_sem_ptr_);
 
   // Unmaps the unmap shared memory object, frees up resources locally
-  if (munmap(shm_map_, sizeof(*shm_map_)) == -1) {
+  if (munmap(shm_map_, SHM_SIZE) == -1) {
     std::cerr << "Failed to unmap shared memory object" << std::endl;
     exit(errno);
   }
