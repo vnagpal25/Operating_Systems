@@ -1,8 +1,8 @@
 // Copyright 2023 CSCE311
 // Author: vnagpal
 // Definition of Child DomainSocketClient class
-#ifndef _DOMAIN_SOCKET_CLIENT_H_
-#define _DOMAIN_SOCKET_CLIENT_H_
+#ifndef PROJECT2_INC_DOMAIN_SOCKET_CLIENT_H_
+#define PROJECT2_INC_DOMAIN_SOCKET_CLIENT_H_
 #include <string>
 #include <vector>
 
@@ -45,4 +45,4 @@ class DomainSocketClient : public DomainSocket {
    */
   void print_output(vector<string> lines) const;
 };
-#endif  // _DOMAIN_SOCKET_CLIENT_H_
+#endif  // PROJECT2_INC_DOMAIN_SOCKET_CLIENT_H_

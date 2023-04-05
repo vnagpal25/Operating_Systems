@@ -1,8 +1,8 @@
 // Copyright 2023 CSCE311
 // Author: vnagpal
 // Definition of Child DomainSocketServer class
-#ifndef _DOMAIN_SOCKET_SERVER_H_
-#define _DOMAIN_SOCKET_SERVER_H_
+#ifndef PROJECT2_INC_DOMAIN_SOCKET_SERVER_H_
+#define PROJECT2_INC_DOMAIN_SOCKET_SERVER_H_
 #include <string>
 #include <vector>
 
@@ -98,4 +98,4 @@ class DomainSocketServer : public DomainSocket {
    */
   bool contains_all_or(string line, vector<string> search_args) const;
 };
-#endif  // _DOMAIN_SOCKET_SERVER_H_
+#endif  // PROJECT2_INC_DOMAIN_SOCKET_SERVER_H_

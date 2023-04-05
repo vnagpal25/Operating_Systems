@@ -1,8 +1,8 @@
 // Copyright 2023 CSCE 311
 // Author: vnagpal
 // Definition of Parent DomainSocket class
-#ifndef _DOMAIN_SOCKET_H_
-#define _DOMAIN_SOCKET_H_
+#ifndef PROJECT2_INC_DOMAIN_SOCKET_H_
+#define PROJECT2_INC_DOMAIN_SOCKET_H_
 #include <sys/socket.h>  // Unix header for sockets, using socket
 #include <sys/un.h>  // defns for Unix domain sockets, using struct sockaddr_un
 #include <unistd.h>  // Unix standard header, using close
@@ -24,4 +24,4 @@ class DomainSocket {
   sockaddr_un sock_addr_;    // socket address from sys/un.h
   std::string socket_path_;  // let std::string manage char *};
 };
-#endif  // _DOMAIN_SOCKET_H_
+#endif  // PROJECT2_INC_DOMAIN_SOCKET_H_
