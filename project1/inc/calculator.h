@@ -3,8 +3,8 @@
  * @author vnagpal
  * Calculator method definitions
  */
-#ifndef PROJECT1_CALCULATOR_H_
-#define PROJECT1_CALCULATOR_H_
+#ifndef PROJECT1_INC_CALCULATOR_H_
+#define PROJECT1_INC_CALCULATOR_H_
 #include <iostream>
 
 /**
@@ -40,4 +40,4 @@ int OrderOpsPref(char op);
  */
 
 double Calculate(double a, double b, char op);
-#endif  // PROJECT1_CALCULATOR_H_
+#endif  // PROJECT1_INC_CALCULATOR_H_

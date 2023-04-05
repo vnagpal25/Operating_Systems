@@ -6,10 +6,8 @@
 #include <iostream>
 #include <stack>
 
-#include "calculator.h"
-using std::cout;
-using std::endl;
-using std::stack;
+#include "project1/inc/calculator.h"
+using std::cout, std::endl, std::stack;
 stack<double> operand_stack;
 stack<char> operator_stack;
 

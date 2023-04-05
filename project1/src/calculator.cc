@@ -3,7 +3,7 @@
  * @author vnagpal
  * Calculator Method Implementations
 */
-#include "calculator.h"
+#include "project1/inc/calculator.h"
 bool IsOperator(char* op_pointer) {
   char pot_op = *op_pointer;  // pot_op = potential operator
   return pot_op == 'x' || pot_op == '+' || pot_op == '-' || pot_op == '/';
