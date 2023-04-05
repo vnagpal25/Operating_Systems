@@ -8,32 +8,35 @@ flags += -pedantic  # even more warnings
 flags += -I $(path)  # add parent to preprocessor include path
 flags += -g  # include gdb instrumentation
 
-link = $(cc) $(flags) -o  # final linked build to binary executable
+link = $(cc) $(flags) $^ -o  # final linked build to binary executable
 
-compile = $(cc) $(flags) -c  # compilation to intermediary .o files
+compile = $(cc) $(flags) -c $< -o  # compilation to intermediary .o files
 
 make: text-client text-server
 	
-text-client:domain_socket.o domain_socket_client.o main_client.o
-	$(cc) $(flags) $^ -o $@
+text-client:bin/domain_socket.o bin/domain_socket_client.o bin/main_client.o
+	$(link) $@
 	
-text-server:domain_socket.o domain_socket_server.o main_server.o
-	$(cc) $(flags) $^ -o $@
+text-server:bin/domain_socket.o bin/domain_socket_server.o bin/main_server.o
+	$(link) $@
 
-main_client.o: main_client.cc domain_socket.h domain_socket_client.h
-	$(compile) main_client.cc
+bin:
+	mkdir -p bin
 
-main_server.o: main_server.cc domain_socket.h domain_socket_server.h
-	$(compile) main_server.cc
+bin/main_client.o: src/main_client.cc inc/domain_socket.h inc/domain_socket_client.h | bin
+	$(compile) $@
 
-domain_socket_client.o: domain_socket_client.cc domain_socket_client.h domain_socket.h
-	$(compile) 	domain_socket_client.cc
+bin/main_server.o: src/main_server.cc inc/domain_socket.h inc/domain_socket_server.h | bin
+	$(compile) $@
 
-domain_socket_server.o: domain_socket_server.cc domain_socket_server.h domain_socket.h
-	$(compile) domain_socket_server.cc
+bin/domain_socket_client.o: src/domain_socket_client.cc inc/domain_socket_client.h inc/domain_socket.h | bin
+	$(compile) 	$@
 
-domain_socket.o: 	domain_socket.cc domain_socket.h
-	$(compile) domain_socket.cc
+bin/domain_socket_server.o: src/domain_socket_server.cc inc/domain_socket_server.h inc/domain_socket.h | bin
+	$(compile) $@
+
+bin/domain_socket.o: 	src/domain_socket.cc inc/domain_socket.h
+	$(compile) $@
 
 clean:
-	rm *.o text-client text-server
+	rm -f bin/*.o text-client text-server

@@ -1,7 +1,7 @@
 // Copyright 2023 CSCE311
 // Author: vnagpal
 // Implementation of Parent DomainSocket class
-#include "domain_socket.h"
+#include "project2/inc/domain_socket.h"
 DomainSocket::DomainSocket(const char *socket_path) {
   socket_path_ = std::string(socket_path);  // std::string manages char *
   sock_addr_ = {};                          // init struct (replaces memset)

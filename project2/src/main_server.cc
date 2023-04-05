@@ -3,7 +3,7 @@
 // Main method implementation for server socket
 #include <fstream>
 
-#include "domain_socket_server.h"
+#include "project2/inc/domain_socket_server.h"
 using std::ifstream, std::ofstream;
 const char kSocket_path[] = "";
 void touch(char* file_name) {

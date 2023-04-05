@@ -1,11 +1,11 @@
 // Copyright 2023 CSCE311
 // Author: vnagpal
 // Definition of Child DomainSocketClient class
-#include "domain_socket_client.h"
+#include "project2/inc/domain_socket_client.h"
 
 #include <iostream>
 
-#include "domain_socket.h"
+#include "project2/inc/domain_socket.h"
 using std::cerr, std::endl, std::clog, std::cout, std::string, std::strncmp;
 
 DomainSocketClient::DomainSocketClient(const char *socket_path)

@@ -1,7 +1,7 @@
 // Copyright 2023 CSCE311
 // Author: vnagpal
 // Implementation of Child DomainSocketServer class
-#include "domain_socket_server.h"
+#include "project2/inc/domain_socket_server.h"
 
 #include <sys/sysinfo.h>
 
@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "domain_socket.h"
+#include "project2/inc/domain_socket.h"
 using std::cerr, std::endl, std::clog, std::cout, std::string, std::strncmp,
     std::ifstream, std::vector, std::adjacent_find, std::not_equal_to;
 

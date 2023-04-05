@@ -5,8 +5,8 @@
 #include <iostream>
 #include <string>
 
-#include "domain_socket.h"
-#include "domain_socket_client.h"
+#include "project2/inc/domain_socket.h"
+#include "project2/inc/domain_socket_client.h"
 using std::string, std::endl, std::cout, std::cerr, std::ifstream,
     std::ofstream;
 const char *kSocket_path = "";
