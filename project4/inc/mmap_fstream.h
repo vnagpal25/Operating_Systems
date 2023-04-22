@@ -1,10 +1,16 @@
-// YOUR DOCUMENTATION GOES HERE
-//
-//
+
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
 #include <ios>
 #include <string>
 
-
+#define PAGE_SIZE 4096
 namespace mem_map {
 
 class fstream {
@@ -17,7 +23,6 @@ class fstream {
   //
   fstream();
 
-
   // Creates Memory-mapped file stream obj with file name
   //
   //   Open mode is std::ios_base::in | std::ios_base:: out by default.
@@ -28,7 +33,6 @@ class fstream {
   //   absorb this one
   //
   explicit fstream(const std::string& fname);
-
 
   // Creates Memory-mapped file stream obj with file name and open mode
   //
@@ -56,7 +60,6 @@ class fstream {
   //
   void open(const std::string& fname);
 
-
   // Attempts to open file given by name with open mode specified by mode
   //
   //   Result can be determined by is_open
@@ -72,7 +75,6 @@ class fstream {
   //
   void open(const std::string& fname, std::ios_base::openmode mode);
 
-
   // Attempts to close an open file
   //
   //   Does nothing if file is already open
@@ -81,16 +83,13 @@ class fstream {
   //
   void close();
 
-
   // Returns file's open state
   //
   bool is_open() const;
 
-
   // Returns file's current size; may change dynmically due to fstream::put
   //
   std::size_t size() const;
-
 
   // Retrieves "next" character from file and updates cursor
   //
@@ -101,12 +100,17 @@ class fstream {
   //
   char get();
 
-
   // Writes character at "next" space in the file and updates cursor
   //
   //  This method may increase the size of a file
   //
   fstream& put(char c);
+
+ private:
+  int fd_;
+  char* file_name_;
+  char* addr_;
+  std::ios_base::openmode mode_;
 };
 
 }  // namespace mem_map

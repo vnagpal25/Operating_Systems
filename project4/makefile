@@ -54,12 +54,12 @@ test-mmap-fstream: test_mmap_fstream.o mmap_fstream.o
 test_mmap_fstream.o : test_mmap_fstream.cc mmap_fstream.h
 	$(compile) $@ $<
 #
-mmap_fstream.o : mmap_fstream.cc mmap_fstream.h
+bin/mmap_fstream.o : src/mmap_fstream.cc inc/mmap_fstream.h
 	$(compile) $@ $<
 
 
 # utils
 #
 clean:
-	rm -f *.o test-mmap-fstream \
+	rm -f bin/*.o test-mmap-fstream \
   test_ate.txt test_get.txt test_open.txt test_put.txt
