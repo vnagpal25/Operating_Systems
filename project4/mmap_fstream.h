@@ -5,11 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <ios>
 #include <string>
-
+#ifndef _PROJECT4_MMAP_FSTREAM_H_
+#define _PROJECT4_MMAP_FSTREAM_H_
 #define PAGE_SIZE 4096
 namespace mem_map {
 
@@ -89,7 +91,7 @@ class fstream {
 
   // Returns file's current size; may change dynmically due to fstream::put
   //
-  std::size_t size() const;
+  size_t size() const;
 
   // Retrieves "next" character from file and updates cursor
   //
@@ -111,6 +113,14 @@ class fstream {
   char* file_name_;
   char* addr_;
   std::ios_base::openmode mode_;
+  struct ::stat file_status_;
+  bool open_;
+  int cursor_;
+
+  int convert_mode_to_Oflag(std::ios_base::openmode mode);
+
+  int convert_mode_to_PROTflag(std::ios_base::openmode mode);
 };
 
 }  // namespace mem_map
+#endif  // _PROJECT4_MMAP_FSTREAM_H_
