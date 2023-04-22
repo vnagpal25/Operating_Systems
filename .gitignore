@@ -9,3 +9,6 @@ project3/bin/main_server.o
 project3/csv-server
 project1/calculate
 project4/.vscode/settings.json
+project4/bin/mmap_fstream.o
+project4/src/grow-mmap-file
+project4/src/grow-mmap-file
