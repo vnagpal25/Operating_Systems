@@ -115,11 +115,13 @@ class fstream {
   std::ios_base::openmode mode_;
   struct ::stat file_status_;
   bool open_;
-  int cursor_;
+  int cursor_ = 0;
 
   int convert_mode_to_Oflag(std::ios_base::openmode mode);
 
   int convert_mode_to_PROTflag(std::ios_base::openmode mode);
+
+  void refresh_file_status();
 };
 
 }  // namespace mem_map

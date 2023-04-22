@@ -30,8 +30,6 @@ fstream::fstream(const std::string& fname)
 
 fstream::fstream(const std::string& fname, std::ios_base::openmode mode) {
   file_name_ = strdup(fname.c_str());
-  cout << "file_name: " << file_name_ << endl;
-
   mode_ = mode;
 
   open(file_name_, mode_);
@@ -56,18 +54,15 @@ void fstream::open(const std::string& fname) {
 }
 
 void fstream::open(const std::string& fname, std::ios_base::openmode mode) {
-  fd_ = ::open(fname.c_str(), convert_mode_to_Oflag(mode), 0664);
+  file_name_ = strdup(fname.c_str());
 
-  // fd should be greater than 0, if not there was an error
+  fd_ = ::open(file_name_, convert_mode_to_Oflag(mode), 0664);
   if (fd_ < 0) {
     cerr << "couldn't open file, ::open() failed " << strerror(errno) << endl;
     exit(errno);
   }
 
-  if (::fstat(fd_, &file_status_) == -1) {
-    cerr << "Error getting file status " << strerror(errno) << endl;
-    exit(errno);
-  }
+  refresh_file_status();
 
   addr_ = static_cast<char*>(mmap(
       nullptr, PAGE_SIZE, convert_mode_to_PROTflag(mode), MAP_SHARED, fd_, 0));
@@ -76,7 +71,12 @@ void fstream::open(const std::string& fname, std::ios_base::openmode mode) {
     exit(errno);
   }
 
-  if (::truncate(file_name_, PAGE_SIZE) < 0) {
+  if (access(file_name_, F_OK) != 0) {
+    cout << "file doesn't exist " << strerror(errno) << endl;
+    exit(errno);
+  }
+  // chmod(file_name_, 0664);
+  if (::truncate(file_name_, file_status_.st_size) < 0) {
     cerr << "::truncate error " << strerror(errno) << endl;
     exit(errno);
   }
@@ -109,7 +109,24 @@ size_t fstream::size() const {
   return file_status_.st_size;
 }
 
-fstream& fstream::put(char c) { return *this; }
+fstream& fstream::put(char c) {
+  // Writes character at "next" space in the file and updates cursor
+  //
+  //  This method may increase the size of a file
+  //
+  if (file_status_.st_size == 0 || file_status_.st_size == cursor_) {
+    ::truncate(file_name_, file_status_.st_size + 1);
+  }
+  refresh_file_status();
+
+  addr_[cursor_++] = c;
+
+  int msync_sig = msync(addr_, strlen(file_name_), MS_SYNC);
+  if (msync_sig < 0) {
+    printf("msync err: %s", strerror(errno));
+  }
+  return *this;
+}
 
 char fstream::get() {
   // Retrieves "next" character from file and updates cursor
@@ -119,7 +136,8 @@ char fstream::get() {
   //  This method must not modify a file; only updates cursor position if not
   //  at end of file
   //
-  return 'p';
+  if (cursor_ < file_status_.st_size) return addr_[cursor_++];
+  return '\0';
 }
 
 int fstream::convert_mode_to_Oflag(std::ios_base::openmode mode) {
@@ -127,24 +145,34 @@ int fstream::convert_mode_to_Oflag(std::ios_base::openmode mode) {
   // std::ios_base::out, open for writing, O_WRONLY
   // in | out, open for reading and writing, O_RDWR
   // std::ios_base::ate  (open with cursor at the end of the file)
+  int o_flag = 0;
   if (mode == (std::ios_base::in | std::ios_base::out)) {
-    return O_RDWR;
+    o_flag |= O_RDWR;
   } else if (mode == std::ios_base::in) {
-    cout << "we're right here" << endl;
-    return O_RDONLY;
+    o_flag |= O_RDONLY;
   } else if (mode == std::ios_base::out) {
-    return O_WRONLY;
+    o_flag |= O_WRONLY;
   }
+
+  if (access(file_name_, F_OK) != 0) o_flag |= O_CREAT;
+  return o_flag;
 }
 
 int fstream::convert_mode_to_PROTflag(std::ios_base::openmode mode) {
   if (mode == (std::ios_base::in | std::ios_base::out)) {
     return PROT_READ | PROT_WRITE;
   } else if (mode == std::ios_base::in) {
-    cout << "we're right here" << endl;
     return PROT_READ;
   } else if (mode == std::ios_base::out) {
     return PROT_WRITE;
+  }
+  return 0;
+}
+
+void fstream::refresh_file_status() {
+  if (::fstat(fd_, &file_status_) == -1) {
+    cerr << "Error getting file status " << strerror(errno) << endl;
+    exit(errno);
   }
 }
 
