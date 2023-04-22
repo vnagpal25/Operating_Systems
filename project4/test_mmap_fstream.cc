@@ -172,6 +172,8 @@ bool TestOpenIsOpenSizePutAteAndGet() {
   std::cout << "\tExpected is_open: true" << std::endl;
   std::cout << "\tActual is_open: "
     << (fstream_out.is_open() ? "true" : "false") << std::endl;
+
+    
   if (!fstream_out.is_open()) {
     std::cout << "\tResult: FAILED" << std::endl;
     return false;

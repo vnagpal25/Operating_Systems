@@ -116,6 +116,7 @@ class fstream {
   struct ::stat file_status_;
   bool open_;
   int cursor_ = 0;
+  bool cursor_end = false;
 
   int convert_mode_to_Oflag(std::ios_base::openmode mode);
 

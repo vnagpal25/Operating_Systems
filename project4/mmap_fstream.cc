@@ -56,6 +56,11 @@ void fstream::open(const std::string& fname) {
 void fstream::open(const std::string& fname, std::ios_base::openmode mode) {
   file_name_ = strdup(fname.c_str());
 
+  if (mode & std::ios_base::ate) {
+    mode &= ~std::ios_base::ate;
+    cursor_end = true;
+  }
+
   fd_ = ::open(file_name_, convert_mode_to_Oflag(mode), 0664);
   if (fd_ < 0) {
     cerr << "couldn't open file, ::open() failed " << strerror(errno) << endl;
@@ -70,6 +75,8 @@ void fstream::open(const std::string& fname, std::ios_base::openmode mode) {
     cerr << "couldn't mmap properly " << strerror(errno) << endl;
     exit(errno);
   }
+
+  if (cursor_end) cursor_ = size();
 
   if (access(file_name_, F_OK) != 0) {
     cout << "file doesn't exist " << strerror(errno) << endl;
@@ -114,17 +121,22 @@ fstream& fstream::put(char c) {
   //
   //  This method may increase the size of a file
   //
+
   if (file_status_.st_size == 0 || file_status_.st_size == cursor_) {
+    cout << "cursor was at the end" << endl;
+
     ::truncate(file_name_, file_status_.st_size + 1);
   }
   refresh_file_status();
-
+  for(int i = 0; i < size();i++)
+    cout << addr_[i] << " ";
   addr_[cursor_++] = c;
 
   int msync_sig = msync(addr_, strlen(file_name_), MS_SYNC);
   if (msync_sig < 0) {
     printf("msync err: %s", strerror(errno));
   }
+
   return *this;
 }
 
@@ -136,6 +148,7 @@ char fstream::get() {
   //  This method must not modify a file; only updates cursor position if not
   //  at end of file
   //
+  cout << "cursor: " << cursor_ << endl;
   if (cursor_ < file_status_.st_size) return addr_[cursor_++];
   return '\0';
 }
@@ -146,6 +159,7 @@ int fstream::convert_mode_to_Oflag(std::ios_base::openmode mode) {
   // in | out, open for reading and writing, O_RDWR
   // std::ios_base::ate  (open with cursor at the end of the file)
   int o_flag = 0;
+
   if (mode == (std::ios_base::in | std::ios_base::out)) {
     o_flag |= O_RDWR;
   } else if (mode == std::ios_base::in) {
