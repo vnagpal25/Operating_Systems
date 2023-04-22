@@ -12,3 +12,7 @@ project4/.vscode/settings.json
 project4/bin/mmap_fstream.o
 project4/src/grow-mmap-file
 project4/src/grow-mmap-file
+project4/mmap_fstream.o
+project4/test_mmap_fstream.o
+project4/test_open.txt
+project4/test-mmap-fstream
