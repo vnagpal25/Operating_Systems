@@ -1,4 +1,4 @@
-##CSCE311 Project 4 - Implementing File I/O using Memory Mapping in C++
+#CSCE311 Project 4 - Implementing File I/O using Memory Mapping in C++
 
 (a) Where do you memory map the file?
   - I memory map the file within the the open() method of my fstream class.
