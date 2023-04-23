@@ -5,13 +5,13 @@
  */
 #include <errno.h>
 #include <fcntl.h>     // O-Flags
-#include <string.h>    //c-string manipulation
-#include <sys/mman.h>  //memory mapping, protection flags
-#include <sys/stat.h>  //::fstat()
-#include <unistd.h>    //access, close, truncate, etc.
+#include <string.h>    // c-string manipulation
+#include <sys/mman.h>  // memory mapping, protection flags
+#include <sys/stat.h>  // ::fstat()
+#include <unistd.h>    // access, close, truncate, etc.
 
-#include <ios>     //openmodes
-#include <string>  //string manipulation
+#include <ios>     // openmodes
+#include <string>  // string manipulation
 #ifndef PROJECT4_MMAP_FSTREAM_H_
 #define PROJECT4_MMAP_FSTREAM_H_
 #define PAGE_SIZE 4096  // max file size
