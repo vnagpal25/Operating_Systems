@@ -1,4 +1,4 @@
-# CSCE311 Project 4 - Implementing File I/O using Memory Mapping in C++
+## CSCE311 Project 4 - Implementing File I/O using Memory Mapping in C++
 Written by Vansh Nagpal
 
 The purpose of this project was to implement a replica of the C/C++ fstream object using memory mapping.
