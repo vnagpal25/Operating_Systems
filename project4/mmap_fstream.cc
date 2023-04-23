@@ -28,12 +28,14 @@ fstream::fstream(const std::string& fname, std::ios_base::openmode mode) {
 }
 
 void fstream::open(const std::string& fname) {
-  // calls open with default mode
+  //returns if already open
   if (is_open()) return;
+    // calls open with default mode
   open(fname, std::ios_base::in | std::ios_base::out);
 }
 
 void fstream::open(const std::string& fname, std::ios_base::openmode mode) {
+  //returns if already open
   if (is_open()) return;
 
   // just in case
