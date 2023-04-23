@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <iostream>
 #include <string>
+#include <vector>
 
 
 bool TestConstructorOpenAndSize();
@@ -17,50 +18,81 @@ bool TestOpenIsOpenPut_newSizeAndGet();
 bool TestOpenIsOpenSizePutAteAndGet();
 
 int main(int argc, char* argv[]) {
-  bool passed = true;
-  if (argc == 1) {
-    passed = passed && TestConstructorOpenAndSize();
-    passed = passed && TestOpenIsOpenAndGet();
-    passed = passed && TestOpenIsOpenPut_newSizeAndGet();
-    passed = passed && TestOpenIsOpenSizePutAteAndGet();
-    return passed ?  0 : 1;
+  const std::vector<bool (*)()> kFstreamTests{
+    TestConstructorOpenAndSize,
+    TestOpenIsOpenAndGet,
+    TestOpenIsOpenPut_newSizeAndGet,
+    TestOpenIsOpenSizePutAteAndGet
+  };
+
+  if (argc == 2) {
+    if (kFstreamTests.at(::atoi(argv[1]))()) {
+      std::cout << "Result: " << "PASSED" << std::endl;
+      return 0;
+    } else {
+      std::cout << "Result: " << "FAILED" << std::endl;
+      return 1;
+    }
   }
 
-  switch (atoi(argv[1])) {
-    case 0:
-      return TestConstructorOpenAndSize() ? 0 : 1;
-    case 1:
-      return TestOpenIsOpenAndGet() ? 0 : 1;
-    case 2:
-      return TestOpenIsOpenPut_newSizeAndGet() ? 0 : 1;
-    case 3:
-      return TestOpenIsOpenSizePutAteAndGet() ? 0 : 1;
-    default:
-      std::cout << argv[1] << " is not a valid test [0, 3]" << std::endl;
+  int i = 0;
+  for (auto test : kFstreamTests) {
+    bool test_passed = test();
+    std::cout << "\tResult: " << (test_passed ? "PASSED" : "FAILED")
+      << std::endl;
+    i += test_passed ? 0 : 1;
   }
 
+  std::cout << '\n'
+    << (kFstreamTests.size() - i) << " of " << kFstreamTests.size()
+    << " tests passed" << std::endl;
+
+  return i == 0 ? 0 : 1;
 }
 
 
 bool TestConstructorOpenAndSize() {
   const std::string kTestFileName = "test_open.txt";
   const std::size_t kTestSize = 10;
+  bool passed = true;
 
   std::cout << "TestConstructorOpenAndSize" << std::endl;
 
+  // open file with constructor
   mem_map::fstream fstream(kTestFileName, std::ios_base::in);
-  std::cout << "\tExpected size: " << kTestSize << std::endl;
-  std::cout << "\tActual size: " << fstream.size() << std::endl;
 
-  if (fstream.size() == kTestSize) {
-    fstream.close();
-    std::cout << "\tResult: PASSED" << std::endl;
-    return true;
-  }
+  // does file test open
+  std::cout << "\tExpected is_open(1): true" << std::endl;
+  std::cout << std::boolalpha;  // print bool as text
+  std::cout << "\tActual is_open(1): " << fstream.is_open() << std::endl;
+  passed = fstream.is_open();
 
-  std::cout << "\tResult: FAILED" << std::endl;
+  // is file size correct
+  std::cout << "\tExpected file size(1): " << kTestSize << std::endl;
+  std::cout << "\tActual file size(1): " << fstream.size() << std::endl;
+  passed = fstream.size() == kTestSize && passed;
+
+  // calling open on an open file does nothing
+  fstream.open(kTestFileName);
+
+  // does file test open
+  std::cout << "\tExpected is_open(2): true" << std::endl;
+  std::cout << "\tActual is_open(2): " << fstream.is_open() << std::endl;
+  passed = fstream.is_open() && passed;
+
+  // is file size correct
+  std::cout << "\tExpected file size(2): " << kTestSize << std::endl;
+  std::cout << "\tActual file size(2): " << fstream.size() << std::endl;
+  passed = fstream.size() == kTestSize && passed;
+
+
   fstream.close();
-  return false;
+  // does file test closed
+  std::cout << "\tExpected is_open(3): false" << std::endl;
+  std::cout << "\tActual is_open(3): " << fstream.is_open() << std::endl;
+  passed = !fstream.is_open() && passed;
+
+  return passed;
 }
 
 
@@ -68,34 +100,38 @@ bool TestOpenIsOpenAndGet() {
   const std::string kTestFileName = "test_get.txt";
   const std::size_t kTestSize = 4;
   const char kTestValues[] = {'w', 'x', 'y', 'z'};
+  bool passed = true;
 
   std::cout << "TestOpenIsOpenAndGet" << std::endl;
 
+  // use default constructor and test open
   mem_map::fstream fstream;
   fstream.open(kTestFileName, std::ios_base::in);
+  passed = fstream.is_open();
   std::cout << "\tExpected is_open: true" << std::endl;
-  std::cout << "\tActual is_open: " << (fstream.is_open() ? "true" : "false")
-    << std::endl;
-  if (!fstream.is_open()) {
-    std::cout << "\tResult: FAILED" << std::endl;
-    return false;
-  }
+  std::cout << std::boolalpha;
+  std::cout << "\tActual is_open: " << passed << std::endl;
 
-  bool passed = true;
-  for (std::size_t i = 0; i < kTestSize; ++i) {
-    char c = fstream.get();
-    std::cout << "\tExpected: " << kTestValues[i] << ", Actual: " << c
-      << std::endl;
-    if (kTestValues[i] != c)
+  std::size_t i = 0;
+  char c = fstream.get();  // call mmap::fstream::get
+  while (c) {  // run while c != \0
+    if (i >= kTestSize) {  // check bounds
       passed = false;
+      std::cout << "\tExpected get: 0, Actual get: " << static_cast<int>(c)
+        << std::endl;
+      break;
+    }
+
+    passed = kTestValues[i] == c && passed;
+
+    std::cout << "\tExpected get: " << kTestValues[i]
+      << ", Actual get: " << c << std::endl;
+
+    c = fstream.get();  // get next character
+    ++i;  // update bounds count
   }
 
   fstream.close();
-
-  if (passed)
-    std::cout << "\tResult: PASSED" << std::endl;
-  else
-    std::cout << "\tResult: FAILED" << std::endl;
 
   return passed;
 }
@@ -105,19 +141,16 @@ bool TestOpenIsOpenPut_newSizeAndGet() {
   const std::string kTestFileName = "test_put.txt";
   const std::size_t kTestSize = 4;
   const char kTestValues[] = {'a', 'b', 'c', 'd'};
+  bool passed = true;
 
   std::cout << "TestOpenIsOpenPut_newSizeAndGet" << std::endl;
 
   // open file
-  mem_map::fstream fstream_out;
-  fstream_out.open(kTestFileName);
+  mem_map::fstream fstream_out(kTestFileName);
+  passed = fstream_out.is_open();
   std::cout << "\tExpected is_open: true" << std::endl;
-  std::cout << "\tActual is_open: "
-    << (fstream_out.is_open() ? "true" : "false") << std::endl;
-  if (!fstream_out.is_open()) {
-    std::cout << "\tResult: FAILED" << std::endl;
-    return false;
-  }
+  std::cout << std::boolalpha;  // print bool as text
+  std::cout << "\tActual is_open: " << fstream_out.is_open() << std::endl;
 
   // write to file
   for (std::size_t i = 0; i < kTestSize; ++i)
@@ -126,29 +159,31 @@ bool TestOpenIsOpenPut_newSizeAndGet() {
   fstream_out.close();
 
   // open file to read results of write
-  bool passed = true;
-  mem_map::fstream fstream_in(kTestFileName,
-                              std::ios_base::in | std::ios_base::out);
+  mem_map::fstream fstream_in(kTestFileName, std::ios_base::in);
+  passed = fstream_in.size() == kTestSize && passed;
   std::cout << "\tExpected size: " << kTestSize << std::endl;
   std::cout << "\tActual size: " << fstream_in.size() << std::endl;
 
-  if (fstream_in.size() != kTestSize)
-    passed = false;
-
-  for (std::size_t i = 0; i < kTestSize; ++i) {
-    char c = fstream_in.get();
-    std::cout << "\tExpected: " << kTestValues[i] << ", Actual: " << c
-      << std::endl;
-    if (kTestValues[i] != c)
+  std::size_t i = 0;
+  char c = fstream_in.get();  // call mmap::fstream::get
+  while (c) {  // run while c != \0
+    if (i >= kTestSize) {  // check bounds
       passed = false;
+      std::cout << "\tExpected get: 0, Actual get: " << static_cast<int>(c)
+        << std::endl;
+      break;
+    }
+
+    passed = kTestValues[i] == c && passed;
+
+    std::cout << "\tExpected get: " << kTestValues[i]
+      << ", Actual get: " << c << std::endl;
+
+    c = fstream_in.get();  // get next character
+    ++i;  // update bounds count
   }
 
   fstream_in.close();
-
-  if (passed)
-    std::cout << "\tResult: PASSED" << std::endl;
-  else
-    std::cout << "\tResult: FAILED" << std::endl;
 
   return passed;
 }
@@ -160,24 +195,18 @@ bool TestOpenIsOpenSizePutAteAndGet() {
   const char kTestValues[] = { 'e', 'f', 'g', 'h' };
   const std::size_t kResultSize = 8;
   const char kResultValues[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
+  bool passed = true;
 
   std::cout << "TestSizeIsOpenPutAteAndGet" << std::endl;
 
   // open file
-  mem_map::fstream fstream_out;
-  fstream_out.open(
+  mem_map::fstream fstream_out(
     kTestFileName,
     std::ios_base::in | std::ios_base::out | std::ios_base::ate);
-  // check open
+  passed = fstream_out.is_open();
   std::cout << "\tExpected is_open: true" << std::endl;
-  std::cout << "\tActual is_open: "
-    << (fstream_out.is_open() ? "true" : "false") << std::endl;
-
-    
-  if (!fstream_out.is_open()) {
-    std::cout << "\tResult: FAILED" << std::endl;
-    return false;
-  }
+  std::cout << std::boolalpha;  // print bool as text
+  std::cout << "\tActual is_open: " << fstream_out.is_open() << std::endl;
 
   // write to file
   for (std::size_t i = 0; i < kTestSize; ++i)
@@ -186,31 +215,29 @@ bool TestOpenIsOpenSizePutAteAndGet() {
   fstream_out.close();
 
   // open file to read results of write
-  bool passed = true;
   mem_map::fstream fstream_in(kTestFileName, std::ios_base::in);
+  passed = fstream_in.size() == kResultSize && passed;
   std::cout << "\tExpected size: " << kResultSize << std::endl;
   std::cout << "\tActual size: " << fstream_in.size() << std::endl;
 
-  if (fstream_in.size() != kResultSize) {
-    std::cout << "\tResult: FALSE" << std::endl;
-    passed = false;
-  }
-
-  for (std::size_t i = 0; i < kResultSize; ++i) {
-    char c = fstream_in.get();
-    std::cout << "\tExpected: " << kResultValues[i] << ", Actual: " << c
-      << std::endl;
-    if (kResultValues[i] != c)
+  std::size_t i = 0;
+  char c = fstream_in.get();  // call mmap::fstream::get
+  while (c) {  // run while c != \0
+    if (i >= kResultSize) {  // check bounds
       passed = false;
+      std::cout << "\tExpected get: 0, Actual get: " << static_cast<int>(c)
+        << std::endl;
+      break;
+    }
+
+    passed = kResultValues[i] == c && passed;
+
+    std::cout << "\tExpected get: " << kResultValues[i]
+      << ", Actual get: " << c << std::endl;
+
+    c = fstream_in.get();  // get next character
+    ++i;  // update bounds count
   }
-
-  fstream_in.close();
-
-  if (passed)
-    std::cout << "\tResult: PASSED" << std::endl;
-  else
-    std::cout << "\tResult: FAILED" << std::endl;
 
   return passed;
 }
-
