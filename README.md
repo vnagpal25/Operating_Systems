@@ -1,6 +1,1 @@
-# CSCE311_OSprojects
-A repository of my projects in Operating Systems.
-Here is a course description of the class:
-Operating system structure and function; process implementation, scheduling, and synchronization; memory management; security; naming protection; resource allocation; network file systems.
-
-With these projects, we learned how to utilize different aspects of the Linux OS by coding in C/C++.
+A repository for Operating Systems projects including IPC(sockets and shared memory), threads, semaphores, File IO using memory mapping
